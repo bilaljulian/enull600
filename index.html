@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message System with Mail Icon</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Hide scrollbars when overlay is active */
+        }
+        .container {
+            display: none; /* Initially hidden */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+            color: #fff;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 1000;
+            overflow-y: auto; /* Allow scrolling if content overflows */
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group textarea, .form-group button {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            resize: vertical;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .message-list {
+            margin-top: 20px;
+        }
+        .message-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #333;
+            margin-bottom: 10px;
+        }
+        .message-count {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .mail-icon {
+            font-size: 24px;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #007bff;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            z-index: 1001; /* Make sure it's above the overlay */
+        }
+        .mail-icon span {
+            margin-left: 5px;
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 14px;
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+        @media (max-width: 600px) {
+            .mail-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+            .mail-icon span {
+                font-size: 12px;
+                padding: 1px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mail-icon" onclick="toggleMessageSystem()">
+        📧<span id="messageCounter">0</span>
+    </div>
+
+    <div class="container" id="messageContainer">
+        <h1></h1>
+        <form id="messageForm">
+            <div class="form-group">
+                <label for="message">Message:</label>
+                <textarea id="message" name="message" rows="6" required></textarea>
+            </div>
+            <button type="button" onclick="sendMessage()">Send</button>
+        </form>
+
+        <div class="message-count">
+            Total Messages Sent: <span id="messageCount">0</span>
+        </div>
+
+        <div class="message-list" id="messageList">
+            <!-- Messages will be displayed here -->
+        </div>
+        <button onclick="toggleMessageSystem()">Close</button>
+    </div>
+
+    <script>
+        let messageCount = 0;
+
+        function toggleMessageSystem() {
+            const container = document.getElementById('messageContainer');
+            if (container.style.display === 'block') {
+                container.style.display = 'none';
+                document.body.style.overflow = 'auto'; // Show scrollbars again
+            } else {
+                container.style.display = 'block';
+                document.body.style.overflow = 'hidden'; // Hide scrollbars
+                loadMessages();
+            }
+        }
+
+        function loadMessages() {
+            const messages = JSON.parse(localStorage.getItem('messages')) || [];
+            const messageList = document.getElementById('messageList');
+            messageList.innerHTML = '';
+
+            messages.forEach(message => {
+                const messageItem = document.createElement('div');
+                messageItem.className = 'message-item';
+                messageItem.textContent = message;
+                messageList.appendChild(messageItem);
+            });
+
+            messageCount = messages.length;
+            document.getElementById('messageCount').textContent = messageCount;
+            document.getElementById('messageCounter').textContent = messageCount;
+        }
+
+        function saveMessage(message) {
+            const messages = JSON.parse(localStorage.getItem('messages')) || [];
+            messages.push(message);
+            localStorage.setItem('messages', JSON.stringify(messages));
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            if (message.trim() === '') return; // Prevent sending empty messages
+
+            // Save and display the new message
+            saveMessage(message);
+
+            // Create a new message element
+            const messageItem = document.createElement('div');
+            messageItem.className = 'message-item';
+            messageItem.textContent = message;
+
+            // Append the new message to the message list
+            const messageList = document.getElementById('messageList');
+            messageList.appendChild(messageItem);
+
+            // Update the message count
+            messageCount++;
+            document.getElementById('messageCount').textContent = messageCount;
+            document.getElementById('messageCounter').textContent = messageCount;
+
+            // Clear the message input field
+            document.getElementById('message').value = '';
+        }
+
+        // Load messages on page load
+        window.onload = loadMessages;
+    </script>
+</body>
+</html>
